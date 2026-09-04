@@ -1,0 +1,13 @@
+--- /tmp/orig-kda.py	2026-08-26 04:41:52.000000000 +0200
++++ /home/aibox/glm53-dense/overlay/glm5next-patched/kda.py	2026-09-04 06:39:31.301264456 +0200
+@@ -172,6 +172,10 @@
+         vllm_config.quant_config = None
+         super().__init__(config, vllm_config, prefix)
+         vllm_config.quant_config = saved_quant_config
++        # [dense-overlay] super() a fige self.quant_config=None ; les
++        # projections explicites (in_proj, f_b, o_proj) doivent voir la
++        # vraie config pour que le match non_routed_exl3 fonctionne.
++        self.quant_config = saved_quant_config
+ 
+         # Linear-attention head config: read the flattened top-level fields when
+         # present (new schema); fall back to the legacy linear_attn_config dict

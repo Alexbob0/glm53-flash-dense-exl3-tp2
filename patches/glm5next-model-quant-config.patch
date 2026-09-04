@@ -1,0 +1,11 @@
+--- /tmp/orig-model.py	2026-09-03 18:08:18.000000000 +0200
++++ /home/aibox/glm53-dense/overlay/glm5next-patched/model.py	2026-09-04 06:39:31.300306446 +0200
+@@ -328,7 +328,7 @@
+                 kv_lora_rank=config.kv_lora_rank,
+                 max_position_embeddings=config.max_position_embeddings,
+                 cache_config=cache_config,
+-                quant_config=None,  # MLA projections are BF16 in checkpoint
++                quant_config=quant_config,  # [dense-overlay] exl3 non_routed match (BF16 ailleurs)
+                 prefix=f"{prefix}.self_attn",
+                 topk_indices_buffer=topk_indices_buffer,
+                 skip_rope=getattr(config, "mla_nope", False),

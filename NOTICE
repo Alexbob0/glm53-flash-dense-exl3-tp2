@@ -1,0 +1,14 @@
+This repository derives from and builds on:
+
+- MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks (MIT License,
+  Copyright (c) 2026 Mia's AI Lab): overlay/exl3.py is a modified version of
+  their overlay/exl3.py (E2 fat-expert edition); patches/ apply to their
+  vLLM-fork model files (Apache-2.0 lineage, vLLM project).
+- vcruz305/vllm-exl3 (Apache License 2.0): the non_routed_exl3 design and the
+  original Exl3LinearMethod (validated TP=1) that overlay/exl3.py ports and
+  extends; the dense_overlay.py pack builder referenced in the README.
+- turboderp/exllamav3 and turboderp/GLM-5.3-Flash-exl3: the LinearEXL3
+  runtime and the dense EXL3 quantizations this work loads.
+- Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw: the routed-experts EXL3 base pack.
+
+No model weights are redistributed here.
