@@ -52,3 +52,29 @@ Interpretation: with k=7 speculative drafts, each verify step routes 8 tokens
 expert kernel runs at ~85 % of DRAM bandwidth. Dense quantization therefore
 caps out: v3 converts most of the remaining BF16 (−~7 ms/step measured) and
 the only dense lever left (lm_head, ~0.6 GB/rank) is worth ~+1 tok/s.
+
+## Prefill (v3, client-side TTFT, cold unique prompts, max_tokens=1)
+
+| prompt | TTFT | tok/s |
+|---|---:|---:|
+| ~8.3 K | 8.3–9.6 s | 870–1010 |
+| ~33 K | 31.2 s | ~1066 |
+
+Same ballpark as the E2 references (their server-side fully-uncached harness
+reports ~1132 tok/s at 8K) — **no prefill regression** from the overlay: the
+`reconstruct_hgemm` path (>144 rows) amortizes over prefill chunks.
+
+## Draft-depth A/B on the v3 cost structure (k=5 vs k=7)
+
+Hypothesis: with dense now cheap, the expert-read share (which scales with the
+verify batch) might flip the k tradeoff. It does not:
+
+| probe | k=7 | k=5 |
+|---|---:|---:|
+| structured | **72.6–73.0** | 58.9–59.1 |
+| prose | 30.7–32.1 | 32.3–34.6 |
+| code (fr) | **43.0–43.6** | 39.7–42.9 |
+
+The acceptance loss on predictable content dominates the expert-read savings.
+**k=7 stays.** (Prose mildly prefers shorter windows — consistent with what we
+measured on DeepSeek-V4-Flash-Vision, where k=3 won on prose.)

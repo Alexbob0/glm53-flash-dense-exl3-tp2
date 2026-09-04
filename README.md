@@ -25,6 +25,9 @@ Baseline = same kit on the stock E2 stack, same protocol.
 Output quality unchanged (an attention-sharding mistake garbles output
 instantly — it doesn't), DFlash2 acceptance unchanged (~52–58 % on code),
 KV pool **1,118,466** tokens at 1M, weight load **79.8 GiB/rank**.
+Prefill is unaffected (~1000 tok/s @8K, ~1066 @32K client-side cold TTFT —
+the >144-row reconstruct path amortizes over chunks), and a k=5 vs k=7 A/B on
+the new cost structure confirms **k=7 stays** (see docs/RESULTS.md).
 
 ```bash
 # structured (count 1→200) / prose (hash-map) / code (fr) — MiaAI bench_decode.py protocol
