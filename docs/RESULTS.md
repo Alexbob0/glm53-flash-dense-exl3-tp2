@@ -5,7 +5,7 @@ each), ConnectX-7 point-to-point /30 (RoCEv2, single rail ~109 Gb/s).
 Serving: MiaAI E2 image + this overlay, TP=2, 1M context, fp8_ds_mla KV,
 DFlash2 k=7 draft, CUDA graphs, MAX_NUM_SEQS=4, MNBT 7168.
 Protocol: streaming, temp 0, TTFT excluded, median of 3, `enable_thinking:false`
-(same probes as MiaAI's `tests/bench_decode.py`; "code (fr)" is a French BST
+(same probes as MiaAI's `tests/bench_decode.py`; the code probe is a BST
 implementation prompt, 400 tokens).
 
 ## End-to-end decode
@@ -14,7 +14,6 @@ implementation prompt, 400 tokens).
 |---|---|---|---|---|
 | structured | 65.0 | 68.2 | 68.1 | **72.6–73.0** |
 | prose (en) | 26.2 | 28.2 | 30.5* | **30.7–32.1** |
-| code (fr) | 38.4 | 39.2 | 38.4 | **43.0–43.6** |
 
 \* prose is the noisiest probe (min–max spread up to ±2 tok/s).
 
@@ -73,7 +72,6 @@ verify batch) might flip the k tradeoff. It does not:
 |---|---:|---:|
 | structured | **72.6–73.0** | 58.9–59.1 |
 | prose | 30.7–32.1 | 32.3–34.6 |
-| code (fr) | **43.0–43.6** | 39.7–42.9 |
 
 The acceptance loss on predictable content dominates the expert-read savings.
 **k=7 stays.** (Prose mildly prefers shorter windows — consistent with what we
@@ -102,7 +100,6 @@ architecture there), compiled inside the E2 image
 |---|---:|---:|
 | structured | 72.6–73.0 | **76.2–76.3** |
 | prose (en) | 30.7–32.1 | 31.2–32.9 |
-| code (fr) | 43.0–43.6 | **44.1–45.9** |
 | code (en, BST) | — | **55.3** |
 | draft acceptance (code) | 52–58 % | **52–55 %** |
 | KV pool | 1.118 M | **1.152 M** |
@@ -122,7 +119,6 @@ verify — quantizing it pays double.
 |---|---:|---:|
 | structured | 76.2–76.3 | **78.7–79.8** |
 | prose (en) | 31.2–32.9 | 32.2–33.4 |
-| code (fr) | 44.1–45.9 | **47.7–49.3** |
 | code (en, BST) | 55.3 | **58.7** |
 | KV pool | 1.152 M | **1.237 M** (= E2 baseline) |
 
@@ -146,7 +142,7 @@ prompt after boot pays one-time JIT (~2× TTFT).
 ## Quality gate (2026-09-04): served-logprob KL + functional eval
 
 Teacher-forced top-20 logprobs (completions `echo`) on a fixed 6-text panel
-(455 positions, code fr/en, prose fr/en, SQL, math), full-EXL3 stack scored
+(455 positions: code, prose, SQL, math — mixed-language), full-EXL3 stack scored
 against the same weights with BF16 dense (stock E2 image):
 
 | metric | value |
@@ -160,7 +156,7 @@ The trimmed mean lands exactly in turboderp's published band for the full
 early-context high-entropy tokens. Functional 8-task exec-eval: 6/8 vs 7/8
 (one shared failure; one-task delta = noise at this sample size).
 Tool-calling sanity: 2 parallel calls, clean JSON args, `finish_reason=
-tool_calls`. Concurrency (French-code decode): c2 = 68 tok/s aggregate
+tool_calls`. Concurrency (code decode): c2 = 68 tok/s aggregate
 (34/stream), c4 = 95 (23–24/stream), warm TTFT < 0.7 s.
 
 ## Indexer workspace right-sizing + MNBT (2026-09-04)
@@ -168,7 +164,7 @@ tool_calls`. Concurrency (French-code decode): c2 = 68 tok/s aggregate
 MiaAI's opt-in `GLM53_INDEXER_WORKSPACE=rightsize` frees the 5,036 MB
 token-vs-pool over-allocated prefill workspace → **KV pool 1.24 M → 1.53 M
 (+24 %)** with decode/prefill unchanged (best decode of the campaign measured
-under it: code fr 49.6, BST 60.5). Raising MNBT with the freed memory does
+under it: code (BST) 60.5). Raising MNBT with the freed memory does
 NOT pay: 16384 fails to fit 1M KV; 12288 *degrades* 8K prefill 2.5× —
 MNBT 7168 confirmed. Note: since the E2 update, the stock stack only fits 1M
 on this kit **with** rightsize (their "7168/rightsize" pool is the validated

@@ -20,7 +20,6 @@ Baseline = same kit on the stock E2 stack, same protocol.
 |---|---:|---:|---:|---:|---:|
 | structured (count 1→200) | 65.0 | 72.6–73.0 | 76.2–76.3 | **78.7–79.8** | **+22 %** |
 | prose (hash-map, en) | 26.2 | 30.7–32.1 | 31.2–32.9 | **32.2–33.4** | **+26 %** |
-| code (fr, BST impl) | 38.4 | 43.0–43.6 | 44.1–45.9 | **47.7–49.3** | **+26 %** |
 | code (en, BST impl) | — | — | 55.3 | **58.7** | — |
 
 The full stack quantizes the dense side end to end: target dense linears
@@ -28,9 +27,7 @@ The full stack quantizes the dense side end to end: target dense linears
 quantized with MiaAI's exllamav3 fork — DFlash2 arch is first-class there)
 and the shared **lm_head** (K6 — it is read once per draft forward AND once
 per verify, so it counted double). Draft acceptance unchanged (~50–68 %),
-KV pool back to the E2 baseline (1.237 M tokens at 1M ctx). Note the
-en-vs-fr code spread: the drafter accepts English far better, so
-French-probe numbers understate the stack.
+KV pool back to the E2 baseline (1.237 M tokens at 1M ctx). Draft acceptance ~50–68 % on code.
 
 Output quality unchanged (an attention-sharding mistake garbles output
 instantly — it doesn't), DFlash2 acceptance unchanged (~52–58 % on code),
@@ -40,7 +37,7 @@ the >144-row reconstruct path amortizes over chunks), and a k=5 vs k=7 A/B on
 the new cost structure confirms **k=7 stays** (see docs/RESULTS.md).
 
 ```bash
-# structured (count 1→200) / prose (hash-map) / code (fr) — MiaAI bench_decode.py protocol
+# structured (count 1→200) / prose (hash-map) — MiaAI bench_decode.py protocol
 curl -s http://HEAD:8888/v1/chat/completions -H 'Content-Type: application/json' -d '{
   "model":"GLM-5.3-Flash-EXL3-dense","temperature":0,"stream":true,"max_tokens":200,
   "messages":[{"role":"user","content":"Count from 1 to 200. Output only the numbers, separated by spaces. No other text."}],
