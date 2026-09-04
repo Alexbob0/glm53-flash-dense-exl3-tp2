@@ -16,16 +16,19 @@ byte-range reads from turboderp's quants (~5.3 GB).
 Streaming, temp 0, TTFT excluded, median of 3, thinking off, two boots.
 Baseline = same kit on the stock E2 stack, same protocol.
 
-| probe | E2 baseline | + dense overlay | **+ EXL3 draft (full stack)** | Δ |
-|---|---:|---:|---:|---:|
-| structured (count 1→200) | 65.0 | 72.6–73.0 | **76.2–76.3** | **+17 %** |
-| prose (hash-map, en) | 26.2 | 30.7–32.1 | **31.2–32.9** | **+21 %** |
-| code (fr, BST impl) | 38.4 | 43.0–43.6 | **44.1–45.9** | **+16 %** |
-| code (en, BST impl) | — | — | **55.3** | — |
+| probe | E2 baseline | + dense | + EXL3 draft | **+ EXL3 lm_head (full)** | Δ |
+|---|---:|---:|---:|---:|---:|
+| structured (count 1→200) | 65.0 | 72.6–73.0 | 76.2–76.3 | **78.7–79.8** | **+22 %** |
+| prose (hash-map, en) | 26.2 | 30.7–32.1 | 31.2–32.9 | **32.2–33.4** | **+26 %** |
+| code (fr, BST impl) | 38.4 | 43.0–43.6 | 44.1–45.9 | **47.7–49.3** | **+26 %** |
+| code (en, BST impl) | — | — | 55.3 | **58.7** | — |
 
-The DFlash2 **draft model itself is EXL3 5 bpw** in the full stack (860 MB vs
-2.2 GB BF16, quantized with MiaAI's exllamav3 fork — DFlash2 arch is
-first-class there). Draft acceptance is unchanged (52–55 %). Note the
+The full stack quantizes the dense side end to end: target dense linears
+(K6/K5), the DFlash2 **draft model** (EXL3 5 bpw, 860 MB vs 2.2 GB BF16,
+quantized with MiaAI's exllamav3 fork — DFlash2 arch is first-class there)
+and the shared **lm_head** (K6 — it is read once per draft forward AND once
+per verify, so it counted double). Draft acceptance unchanged (~50–68 %),
+KV pool back to the E2 baseline (1.237 M tokens at 1M ctx). Note the
 en-vs-fr code spread: the drafter accepts English far better, so
 French-probe numbers understate the stack.
 

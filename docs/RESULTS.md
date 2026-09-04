@@ -106,3 +106,22 @@ architecture there), compiled inside the E2 image
 | code (en, BST) | — | **55.3** |
 | draft acceptance (code) | 52–58 % | **52–55 %** |
 | KV pool | 1.118 M | **1.152 M** |
+
+## EXL3 lm_head (K6, shared target/draft head)
+
+turboderp's 4.05bpw branch ships lm_head K6 (mul1). The head is a
+`ParallelLMHead` (VocabParallelEmbedding), not a LinearBase — but its
+quant-method interface is call-compatible with a linear method
+(`create_weights(layer, dim, [vocab_per_rank], …)`, `apply(layer, x, bias)`),
+so the same `Exl3LinearMethod` serves it: vocab-parallel = contiguous column
+shard, `layer.tp_rank/tp_size` present. Because the DFlash2 draft shares the
+target head, the BF16 head was read once per draft forward and once per
+verify — quantizing it pays double.
+
+| probe | EXL3 draft | + EXL3 lm_head |
+|---|---:|---:|
+| structured | 76.2–76.3 | **78.7–79.8** |
+| prose (en) | 31.2–32.9 | 32.2–33.4 |
+| code (fr) | 44.1–45.9 | **47.7–49.3** |
+| code (en, BST) | 55.3 | **58.7** |
+| KV pool | 1.152 M | **1.237 M** (= E2 baseline) |
