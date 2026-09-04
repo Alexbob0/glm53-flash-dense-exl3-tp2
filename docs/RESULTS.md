@@ -125,3 +125,20 @@ verify — quantizing it pays double.
 | code (fr) | 44.1–45.9 | **47.7–49.3** |
 | code (en, BST) | 55.3 | **58.7** |
 | KV pool | 1.152 M | **1.237 M** (= E2 baseline) |
+
+## Compiler fusion passes: tested, neutral (2026-09-04)
+
+`--compilation-config '{"pass_config":{...}}'` A/B on the full stack:
+A = `fuse_allreduce_rms`+`fuse_gemm_comms`, B = A + `fuse_mla_dual_rms_norm`
++`fuse_rope_kvcache_cat_mla`. All probes within ±2 tok/s of the plain config
+(structured 79.1–80.1 across variants), numerics clean (factual/arithmetic
+smokes). Not adopted — no win, extra code paths.
+
+## TTFT / prefill picture (full stack)
+
+Cold prefill ~1000 tok/s @8K, ~1066 @32K (client-side TTFT-inclusive) —
+unchanged by the overlay, and structurally GLM's weak side (issue #27 chunking;
+E2 already contributes +20 %). Agent-style warm TTFT with a ~2K system prompt:
+4.7 s cold → 3.2–3.7 s warm — the hybrid KDA/mamba cache only takes
+block-aligned prefix hits, so warm gains are real but partial. First long
+prompt after boot pays one-time JIT (~2× TTFT).
