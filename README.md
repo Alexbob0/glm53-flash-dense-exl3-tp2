@@ -16,11 +16,18 @@ byte-range reads from turboderp's quants (~5.3 GB).
 Streaming, temp 0, TTFT excluded, median of 3, thinking off, two boots.
 Baseline = same kit on the stock E2 stack, same protocol.
 
-| probe | E2 baseline | **+ dense overlay (this repo)** | Δ |
-|---|---:|---:|---:|
-| structured (count 1→200) | 65.0 | **72.6–73.0** | **+12 %** |
-| prose (hash-map, en) | 26.2 | **30.7–32.1** | **+17 %** |
-| code (fr, BST impl) | 38.4 | **43.0–43.6** | **+12 %** |
+| probe | E2 baseline | + dense overlay | **+ EXL3 draft (full stack)** | Δ |
+|---|---:|---:|---:|---:|
+| structured (count 1→200) | 65.0 | 72.6–73.0 | **76.2–76.3** | **+17 %** |
+| prose (hash-map, en) | 26.2 | 30.7–32.1 | **31.2–32.9** | **+21 %** |
+| code (fr, BST impl) | 38.4 | 43.0–43.6 | **44.1–45.9** | **+16 %** |
+| code (en, BST impl) | — | — | **55.3** | — |
+
+The DFlash2 **draft model itself is EXL3 5 bpw** in the full stack (860 MB vs
+2.2 GB BF16, quantized with MiaAI's exllamav3 fork — DFlash2 arch is
+first-class there). Draft acceptance is unchanged (52–55 %). Note the
+en-vs-fr code spread: the drafter accepts English far better, so
+French-probe numbers understate the stack.
 
 Output quality unchanged (an attention-sharding mistake garbles output
 instantly — it doesn't), DFlash2 acceptance unchanged (~52–58 % on code),

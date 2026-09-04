@@ -78,3 +78,31 @@ verify batch) might flip the k tradeoff. It does not:
 The acceptance loss on predictable content dominates the expert-read savings.
 **k=7 stays.** (Prose mildly prefers shorter windows — consistent with what we
 measured on DeepSeek-V4-Flash-Vision, where k=3 won on prose.)
+
+## EXL3 draft (DFlash2 quantized to 5 bpw)
+
+Draft converted with MiaAI-Lab/exllamav3 (1.4.2; DFlash2 is a first-class
+architecture there), compiled inside the E2 image
+(CPATH=<dist-packages>/nvidia/cu13/include for the slim toolkit). 860 MB vs
+2.2 GB BF16, RMSE ~0.0009/linear. The draft has no embed/lm_head of its own
+(shared with the target). Serving-side wiring:
+
+- non_routed_exl3 keys at the draft's OFFSET runtime prefixes
+  (`model.layers.45..49` + `model.fc` — start_layer_id = target layer count);
+- the draft is built replicated with global tp attrs → the loader decides by
+  SHAPES (narrow only when full == dest×tp);
+- DFlash2 pre-builds a fused multi-layer KV weight by slicing
+  `qkv_proj.weight[q_size:]` — gone once quantized (and the empty slice is
+  silent). We reconstruct the K/V rows from the k/v trellis shards via
+  chunked identity forwards (≤128 rows — beyond 144 rows LinearEXL3 switches
+  to a CPU-unpacking reconstruct path that deadlocked TP ranks during
+  dummy_run), triggered right after process_weights_after_loading.
+
+| probe | BF16 draft | EXL3 draft |
+|---|---:|---:|
+| structured | 72.6–73.0 | **76.2–76.3** |
+| prose (en) | 30.7–32.1 | 31.2–32.9 |
+| code (fr) | 43.0–43.6 | **44.1–45.9** |
+| code (en, BST) | — | **55.3** |
+| draft acceptance (code) | 52–58 % | **52–55 %** |
+| KV pool | 1.118 M | **1.152 M** |
