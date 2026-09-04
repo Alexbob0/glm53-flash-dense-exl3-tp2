@@ -142,3 +142,35 @@ E2 already contributes +20 %). Agent-style warm TTFT with a ~2K system prompt:
 4.7 s cold → 3.2–3.7 s warm — the hybrid KDA/mamba cache only takes
 block-aligned prefix hits, so warm gains are real but partial. First long
 prompt after boot pays one-time JIT (~2× TTFT).
+
+## Quality gate (2026-09-04): served-logprob KL + functional eval
+
+Teacher-forced top-20 logprobs (completions `echo`) on a fixed 6-text panel
+(455 positions, code fr/en, prose fr/en, SQL, math), full-EXL3 stack scored
+against the same weights with BF16 dense (stock E2 image):
+
+| metric | value |
+|---|---:|
+| top-1 agreement | **97.6 %** (444/455) |
+| median truncated KL (ref‖cand) | **0.00103 nats** |
+| p90 / trimmed mean (excl. top 1 %) | 0.053 / 0.0344 nats |
+
+The trimmed mean lands exactly in turboderp's published band for the full
+4.05 bpw pack (0.0345 vs BF16, different methodology). Outlier positions are
+early-context high-entropy tokens. Functional 8-task exec-eval: 6/8 vs 7/8
+(one shared failure; one-task delta = noise at this sample size).
+Tool-calling sanity: 2 parallel calls, clean JSON args, `finish_reason=
+tool_calls`. Concurrency (French-code decode): c2 = 68 tok/s aggregate
+(34/stream), c4 = 95 (23–24/stream), warm TTFT < 0.7 s.
+
+## Indexer workspace right-sizing + MNBT (2026-09-04)
+
+MiaAI's opt-in `GLM53_INDEXER_WORKSPACE=rightsize` frees the 5,036 MB
+token-vs-pool over-allocated prefill workspace → **KV pool 1.24 M → 1.53 M
+(+24 %)** with decode/prefill unchanged (best decode of the campaign measured
+under it: code fr 49.6, BST 60.5). Raising MNBT with the freed memory does
+NOT pay: 16384 fails to fit 1M KV; 12288 *degrades* 8K prefill 2.5× —
+MNBT 7168 confirmed. Note: since the E2 update, the stock stack only fits 1M
+on this kit **with** rightsize (their "7168/rightsize" pool is the validated
+combo — and their launcher will silently `docker pull` over a locally built
+:exl3 tag unless `SKIP_PULL=1`; ours did, twice).
