@@ -137,3 +137,7 @@ index-vs-safetensors stripping: [docs/PITFALLS.md](docs/PITFALLS.md).
 **turboderp** — ExLlamaV3 + GLM-5.3-Flash-exl3 quants ·
 **Mia-AiLab** — TR3-4bpw pack. This repo: MIT, see [NOTICE](NOTICE).
 Weight licenses are those of their respective packs.
+
+## See also
+
+[glm53-flash-vllm-upstream-sm121](https://github.com/Alexbob0/glm53-flash-vllm-upstream-sm121) — the same EXL3 pack served by the **stock upstream vLLM nightly** on 2× DGX Spark with CUDA graphs and DFlash2 (80 tok/s structured, prefill 1 000–1 165 tok/s): the SM121 rope-free MLA / kpool top-k / drafter KV issues solved as a Python overlay.
